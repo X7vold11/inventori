@@ -1,0 +1,213 @@
+@import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+
+@theme {
+  --color-primary: #3b82f6;
+  --color-primary-hover: #2563eb;
+  --color-secondary: #ffedd5;
+  --color-background: #f9fafb;
+  
+  --color-theme-primary: var(--theme-primary);
+  --color-theme-primary-hover: var(--theme-primary-hover);
+  --color-theme-primary-light: var(--theme-primary-light);
+  --color-theme-primary-lighter: var(--theme-primary-lighter);
+  --color-theme-accent: var(--theme-accent);
+  --color-theme-accent-hover: var(--theme-accent-hover);
+  --color-theme-text: var(--theme-text);
+  --color-theme-text-dark: var(--theme-text-dark);
+  --color-theme-border: var(--theme-border);
+  --color-theme-border-accent: var(--theme-border-accent);
+  --color-theme-bg-light: var(--theme-bg-light);
+  --color-theme-bg-lighter: var(--theme-bg-lighter);
+  --color-theme-gradient-start: var(--theme-gradient-start);
+  --color-theme-gradient-end: var(--theme-gradient-end);
+  --color-theme-gradient-start-hover: var(--theme-gradient-start-hover);
+  --color-theme-gradient-end-hover: var(--theme-gradient-end-hover);
+  --color-theme-shadow: var(--theme-shadow);
+  --color-theme-shadow-hover: var(--theme-shadow-hover);
+}
+
+body {
+  background-color: var(--color-background);
+  font-family: 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ===== Custom Animations ===== */
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-6px); }
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.96); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+@keyframes gradient-x {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+@keyframes count-up {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-float { animation: float 3s ease-in-out infinite; }
+.animate-slide-up { animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+.animate-fade-in { animation: fadeIn 0.4s ease-out forwards; }
+.animate-scale-in { animation: scaleIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
+.animate-shimmer { 
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.08), transparent);
+  background-size: 200% 100%;
+  animation: shimmer 2s infinite; 
+}
+.animate-gradient-x {
+  background-size: 200% 200%;
+  animation: gradient-x 3s ease infinite;
+}
+.animate-count-up { animation: count-up 0.4s ease-out forwards; }
+
+/* Sidebar active indicator */
+@keyframes slideInLeft {
+  from { opacity: 0; transform: translateY(-50%) scaleY(0); }
+  to { opacity: 1; transform: translateY(-50%) scaleY(1); }
+}
+
+/* Staggered animation delays */
+.delay-100 { animation-delay: 100ms; }
+.delay-200 { animation-delay: 200ms; }
+.delay-300 { animation-delay: 300ms; }
+.delay-400 { animation-delay: 400ms; }
+.delay-500 { animation-delay: 500ms; }
+
+/* ===== Custom Scrollbar ===== */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { 
+  background: var(--theme-border, #cbd5e1); 
+  border-radius: 100px; 
+}
+::-webkit-scrollbar-thumb:hover { background: var(--theme-primary, #94a3b8); }
+
+/* ===== Premium Table Styles ===== */
+.premium-table {
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.premium-table thead th {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  font-size: 0.7rem;
+  font-weight: 700;
+}
+
+.premium-table tbody tr {
+  transition: all 0.2s ease;
+}
+
+.premium-table tbody tr:hover {
+  background: linear-gradient(90deg, var(--theme-shadow, rgba(99, 102, 241, 0.03)), var(--theme-shadow-hover, rgba(99, 102, 241, 0.06)), var(--theme-shadow, rgba(99, 102, 241, 0.03)));
+}
+
+/* ===== Glass Card Effect ===== */
+.glass-card {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+/* ===== Gradient Text ===== */
+.gradient-text {
+  background: linear-gradient(135deg, #1e293b 0%, #475569 50%, #1e293b 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.gradient-text-blue {
+  background: linear-gradient(135deg, var(--theme-primary) 0%, var(--theme-gradient-end) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.gradient-text-emerald {
+  background: linear-gradient(135deg, #059669 0%, #0891b2 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ===== Section Heading Underline ===== */
+.section-heading::after {
+  content: '';
+  display: block;
+  width: 40px;
+  height: 3px;
+  border-radius: 2px;
+  margin-top: 10px;
+  background: linear-gradient(90deg, var(--theme-primary), var(--theme-gradient-end));
+}
+
+/* ===== Stat Card Number ===== */
+.stat-value {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-feature-settings: 'tnum';
+  letter-spacing: -0.025em;
+}
+
+/* ===== Form Input Hover ===== */
+.premium-input {
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.premium-input:hover {
+  border-color: var(--theme-border-accent, #93c5fd);
+  box-shadow: 0 0 0 3px var(--theme-shadow, rgba(59, 130, 246, 0.06));
+}
+
+.premium-input:focus {
+  border-color: var(--theme-primary, #3b82f6);
+  box-shadow: 0 0 0 4px var(--theme-shadow-hover, rgba(59, 130, 246, 0.12));
+}
+
+/* ===== Timeline Dot ===== */
+.timeline-dot {
+  position: relative;
+}
+
+.timeline-dot::before {
+  content: '';
+  position: absolute;
+  left: 24px;
+  top: 60px;
+  bottom: -24px;
+  width: 2px;
+  background: linear-gradient(to bottom, var(--theme-border, #e2e8f0), transparent);
+}
+
+.timeline-dot:last-child::before {
+  display: none;
+}
+
