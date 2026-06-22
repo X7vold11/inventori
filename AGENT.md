@@ -1,19 +1,24 @@
 # AGENT.md — Panduan untuk Semua Model AI
 
-Dokumen ini adalah satu-satunya sumber kebenaran bagi AI yang bekerja pada proyek **InventoriKu v2.0**. Semua perubahan, analisis, dan keputusan harus mematuhi aturan berikut.
+**Proyek:** InventoriKu v2.0 — Sistem Manajemen Gudang & Penjualan UMKM
+**Ditetapkan:** 22 Juni 2026
+
+Dokumen ini adalah satu-satunya sumber kebenaran bagi AI yang mengerjakan proyek ini. Setiap perubahan, analisis, dan keputusan harus mematuhi aturan berikut.
 
 ---
 
 ## 1. PRINSIP DASAR (dari AGENT.py)
 
-| Prinsip | Deskripsi |
-|---------|-----------|
-| **Input Validation** | Semua input pengguna harus divalidasi. Blokir PII/credentials (email, password, token, API key, SSN, kartu kredit, telepon) sebelum diproses. |
-| **Tool Whitelisting** | Hanya tool/endpoint yang terdaftar yang boleh diakses. Tidak ada akses ke fungsi yang tidak dikenal. |
-| **Audit Trail** | Setiap operasi harus tercatat (siapa, apa, kapan, hasilnya). Log yang lengkap untuk kepatuhan. |
-| **Error Handling** | Semua error harus ditangani dengan retry mechanism dan pesan yang jelas. Jangan expose stack trace ke user. |
-| **Output Sanitization** | Hapus/redact PII dari output sebelum dikirim ke user. |
-| **Honest Simplicity** | Sederhana, jujur, dan deterministik lebih baik daripada kompleks dan tidak bisa diandalkan. |
+| Prinsip | Deskripsi | Implementasi di Projek |
+|---------|-----------|----------------------|
+| **Input Validation** | Blokir PII/credentials sebelum diproses | Laravel Request validation, sanctum auth |
+| **Tool/Endpoint Whitelisting** | Hanya endpoint terdaftar yang boleh diakses | Route api.php explicit, tidak ada wildcard |
+| **Audit Trail** | Setiap operasi tercatat (siapa, apa, kapan) | Token auth, user teridentifikasi di setiap request |
+| **Error Handling** | Retry mechanism, jangan expose stack trace | DB transactions + try-catch di controllers |
+| **Output Sanitization** | Jangan expose password/token di response | Sanctum token dikirim hanya saat login |
+| **Honest Simplicity** | Sederhana, jujur, deterministik > kompleks palsu | Fitur yang tidak reliable dihapus (v2.0) |
+
+Filosofi utama: *"Simple and honest beats sophisticated and broken"*
 
 ---
 
@@ -21,38 +26,31 @@ Dokumen ini adalah satu-satunya sumber kebenaran bagi AI yang bekerja pada proye
 
 Setiap perubahan WAJIB mengikuti alur ini:
 
-```mermaid
-graph TD
-    A[Edit Code di Local] --> B[Test di Localhost]
-    B --> C{Lolos?}
-    C -->|Ya| D[Commit & Push ke GitHub]
-    C -->|Tidak| A
-    D --> E[GitHub Actions: Auto Test]
-    E --> F{Lolos?}
-    F -->|Ya| G[Bisa Merge / Deploy]
-    F -->|Tidak| H[Analisa Log Error]
-    H --> I[Perbaiki Code]
-    I --> A
+```
+Edit Code di Local → Test di Localhost → Lolos? → Commit & Push ke GitHub
+       ↑                                      ↓
+       └── Gagal ← Analisa Log Error ← Gagal ← GitHub Actions Auto Test
+                                                    ↓
+                                                 Lolos → Bisa Merge/Deploy
 ```
 
 ### Aturan Detail:
 
-1. **Sebelum coding**: Baca file terkait dan pahami konteksnya.
-2. **Setelah edit**: Jalankan test lokal.
+1. **Sebelum coding**: Baca file terkait dan pahami konteksnya
+2. **Setelah edit**: Jalankan test lokal
    - Backend: `cd backend && php artisan test`
    - Frontend: `cd frontend && npm run lint`
-3. **Jika test lokal lolos**: Commit dan push ke GitHub.
+3. **Jika test lokal lolos**: Commit dan push
    ```
-   git add .
-   git commit -m "deskripsi perubahan"
+   git add <file>
+   git commit -m "deskripsi perubahan singkat"
    git push
    ```
-4. **GitHub Actions** akan otomatis menjalankan test. Periksa hasilnya di tab Actions repository.
-5. **Jika test Gagal di GitHub**:
-   - Analisa log error dari GitHub Actions
-   - Identifikasi penyebab kegagalan
+4. **GitHub Actions** akan auto-test. Cek hasilnya di tab Actions.
+5. **Jika test gagal di GitHub**:
+   - Analisa log error dari Actions
    - Perbaiki code di local
-   - Ulangi dari langkah 2
+   - Test ulang → commit → push → ulangi sampai lolos
 
 ---
 
@@ -67,45 +65,26 @@ graph TD
 | **Database** | SQLite (default) / MySQL |
 | **Auth** | Laravel Sanctum (token-based) |
 | **State** | React Context + localStorage |
-| **HTTP** | Axios |
+| **HTTP Client** | Axios |
 | **Charts** | Recharts |
 | **Icons** | Lucide React |
 | **Modals** | SweetAlert2 |
 
 ### 3.2 Database Schema
 
-| Tabel | Kolom Utama |
-|-------|-------------|
-| `users` | id, name, email, password, role (manager\|cashier), theme |
-| `items` | id, name, selling_price, description, deleted_at (soft delete) |
-| `inventories` | id, item_id, stock, average_purchase_price |
-| `sales` | id, item_id, quantity, selling_price, purchase_price, sale_date, transaction_id, payment_method (cash\|qris), cash_paid |
-| `restocks` | id, item_id, quantity, purchase_price, restock_date |
+| Tabel | Kolom |
+|-------|-------|
+| `users` | id, name, email, password, role (manager\|cashier), theme, timestamps |
+| `items` | id, name, selling_price, description, timestamps, deleted_at |
+| `inventories` | id, item_id (FK→items), stock, average_purchase_price, timestamps |
+| `sales` | id, item_id (FK→items), quantity, selling_price, purchase_price, sale_date, transaction_id (UUID), payment_method (cash\|qris), cash_paid, timestamps |
+| `restocks` | id, item_id (FK→items), quantity, purchase_price, restock_date, timestamps |
 
-### 3.3 API Endpoints
-
-| Method | Endpoint | Akses |
-|--------|----------|-------|
-| POST | `/api/login` | Public |
-| POST | `/api/register` | Public |
-| GET | `/api/me` | Any auth |
-| POST | `/api/logout` | Any auth |
-| POST | `/api/update-theme` | Any auth |
-| GET | `/api/dashboard` | Manager only |
-| CRUD | `/api/items` | Manager only |
-| CRUD | `/api/users` | Manager only |
-| R | `/api/restocks` | Manager only |
-| C | `/api/restocks` | Manager only |
-| R | `/api/sales` | Any auth |
-| C | `/api/sales` | Any auth |
-| GET | `/api/sales/summary` | Any auth |
-| GET | `/api/sales/transactions` | Any auth |
-
-### 3.4 Role Access
+### 3.3 Role Access Matrix
 
 | Fitur | Manager | Kasir |
 |-------|---------|-------|
-| Dashboard | ✅ | ❌ |
+| Dashboard (statistik & grafik) | ✅ | ❌ |
 | Jenis Barang (CRUD) | ✅ | ❌ |
 | Restock Gudang | ✅ | ❌ |
 | Kasir / POS | ❌ | ✅ |
@@ -113,37 +92,84 @@ graph TD
 | Ganti Tema | ✅ | ✅ |
 | Daftar Akun (CRUD) | ✅ | ❌ |
 
+### 3.4 API Endpoints
+
+| Method | Endpoint | Controller | Akses |
+|--------|----------|-----------|-------|
+| POST | `/api/login` | AuthController@login | Public |
+| POST | `/api/register` | AuthController@register | Public |
+| GET | `/api/me` | AuthController@me | Any auth |
+| POST | `/api/logout` | AuthController@logout | Any auth |
+| POST | `/api/update-theme` | AuthController@updateTheme | Any auth |
+| GET | `/api/users` | UserController@index | Manager* |
+| POST | `/api/users` | UserController@store | Manager* |
+| PUT | `/api/users/{id}` | UserController@update | Manager* |
+| DELETE | `/api/users/{id}` | UserController@destroy | Manager* |
+| GET | `/api/dashboard` | DashboardController@index | Manager** |
+| GET | `/api/items` | ItemController@index | Manager** |
+| POST | `/api/items` | ItemController@store | Manager** |
+| GET | `/api/items/{id}` | ItemController@show | Manager** |
+| PUT | `/api/items/{id}` | ItemController@update | Manager** |
+| DELETE | `/api/items/{id}` | ItemController@destroy | Manager** |
+| GET | `/api/restocks` | RestockController@index | Manager** |
+| POST | `/api/restocks` | RestockController@store | Manager** |
+| GET | `/api/sales` | SaleController@index | Any auth |
+| POST | `/api/sales` | SaleController@store | Any auth |
+| GET | `/api/sales/summary` | SaleController@summary | Any auth |
+| GET | `/api/sales/transactions` | SaleController@transactions | Any auth |
+
+*\* = Inline role check di controller*
+*\*\* = TIDAK ADA role check — HARUS DIPERBAIKI*
+
 ---
 
 ## 4. ANALISIS KESELARASAN (ALIGNMENT CHECK)
 
-### 4.1 Issues yang Ditemukan
+### 4.1 ✅ Sudah Selaras
 
-| Issue | Detail | Severity | Status |
-|-------|--------|----------|--------|
-| **Backend Role Middleware Tidak Ada** | Tidak ada middleware/policy yang membatasi akses ke endpoint manager. Cashier bisa akses `/api/items`, `/api/dashboard`, `/api/restocks` jika tahu URL-nya. | **HIGH** | 🔴 Perlu diperbaiki |
-| **ROLE_ACCESS_GUIDE.md Outdated** | Dokumentasi menyatakan Kasir tidak bisa akses Riwayat Penjualan, tapi kode sudah mengizinkannya (fitur v2.0) | **LOW** | 🟡 Perlu diupdate |
-| **InventoryController Kosong** | Controller ada tapi tidak digunakan di routes. Dead code. | **LOW** | 🟡 Perlu dibersihkan |
-| **Frontend Role Routing** | Proteksi role hanya di frontend (conditional rendering). Tanpa backend middleware, ini tidak aman. | **MEDIUM** | 🟡 Perlu backend middleware |
-| **SalesController Role Check Hilang** | Semua user auth bisa akses semua sales endpoints, tidak ada pembedaan manager/kasir. | **LOW** | 🟢 OK untuk desain saat ini |
+| Komponen | Status | Keterangan |
+|----------|--------|------------|
+| DB Schema ↔ Models | ✅ | Semua migration sesuai Eloquent models |
+| Frontend Routes ↔ API | ✅ | Items, Dashboard, Restock, Sales, Accounts semua punya endpoint |
+| Auth Flow ↔ Frontend | ✅ | Token di localStorage, verify via `/me`, Axios interceptor untuk 401 |
+| Theme System (front↔back↔DB) | ✅ | Tema per-user tersimpan di DB, endpoint update, persist di localStorage |
+| Sale Transaction Logic | ✅ | Debit inventory + insert sale dalam 1 DB transaction |
+| Restock Moving Average | ✅ | Update stock + hitung ulang average_purchase_price dalam 1 transaction |
+| Item + Inventory Init | ✅ | Create item + inventory (stock=0) dalam 1 transaction |
+| Soft Delete Items | ✅ | Model pakai `SoftDeletes`, migration sudah ada |
+| QRIS Payment | ✅ | `payment_method` + `cash_paid` di DB, UI checkout dengan opsi Tunai/QRIS |
+| Multi Theme (6 tema) | ✅ | Frontend CSS variables, Recharts, sidebar, button semua terintegrasi |
 
-### 4.2 Menambahkan Role Middleware (Rekomendasi)
+### 4.2 ❌ Belum Selaras (Wajib Diperbaiki)
 
-Buat middleware `CheckRole` dan terapkan di route groups:
+| No | Issue | Detail | Severity | Rekomendasi |
+|----|-------|--------|----------|-------------|
+| 1 | **DashboardController tanpa role check** | Cashier bisa akses `/api/dashboard` langsung via API meskipun frontend menyembunyikannya | **HIGH** 🔴 | Tambah `if ($request->user()->role !== 'manager')` seperti di UserController |
+| 2 | **ItemController tanpa role check** | Cashier bisa akses CRUD `/api/items` langsung via API | **HIGH** 🔴 | Tambah role check di semua method (index, store, update, destroy) |
+| 3 | **RestockController tanpa role check** | Cashier bisa akses `/api/restocks` langsung via API | **HIGH** 🔴 | Tambah role check di index() dan store() |
+| 4 | **ROLE_ACCESS_GUIDE.md outdated** | Dokumen baris 47 & 396 menyatakan "Kasir ❌ Riwayat Penjualan" tapi kode sudah mengizinkan sejak v2.0 | **MEDIUM** 🟡 | Update matriks akses: Kasir ✅ Riwayat Penjualan |
+| 5 | **UserController role check inline** | Bekerja tapi tidak konsisten — controller lain tidak memilikinya | **MEDIUM** 🟡 | Buat middleware `CheckRole` terpusat agar semua controller konsisten |
+
+### 4.3 Rekomendasi: Middleware CheckRole
+
+Buat middleware terpusat agar role check konsisten di semua controller:
 
 ```php
 // app/Http/Middleware/CheckRole.php
-public function handle(Request $request, Closure $next, ...$roles)
+class CheckRole
 {
-    if (!in_array($request->user()->role, $roles)) {
-        return response()->json(['message' => 'Unauthorized.'], 403);
+    public function handle(Request $request, Closure $next, string $role): Response
+    {
+        if ($request->user()->role !== $role) {
+            return response()->json(['message' => 'Akses ditolak.'], 403);
+        }
+        return $next($request);
     }
-    return $next($request);
 }
 ```
 
 ```php
-// routes/api.php
+// routes/api.php — setelah middleware terdaftar
 Route::middleware(['auth:sanctum', 'role:manager'])->group(function () {
     Route::apiResource('items', ItemController::class);
     Route::apiResource('users', UserController::class);
@@ -157,45 +183,42 @@ Route::middleware(['auth:sanctum', 'role:manager'])->group(function () {
 ## 5. CODING CONVENTIONS
 
 ### Backend (Laravel)
-- Gunakan **DB transactions** untuk operasi multi-tabel (Item + Inventory, Sale + Inventory, Restock + Inventory)
-- Gunakan **SoftDeletes** untuk items (jangan hapus permanen)
-- Gunakan **Form Request** atau inline validation
-- Gunakan **API Resources** untuk transformasi response (opsional)
-- Role check harus di **backend middleware**, bukan hanya di frontend
+- DB transactions untuk operasi multi-tabel (Item+Inventory, Sale+Inventory, Restock+Inventory)
+- SoftDeletes untuk items (jangan hapus permanen)
+- Role check di **backend**, bukan hanya di frontend
+- Return JSON response dengan status code yang sesuai (200, 201, 400, 403, 500)
+- Validasi input pakai `$request->validate()` sebelum diproses
 
 ### Frontend (React)
-- Gunakan **functional components** dengan hooks (useState, useEffect, useCallback)
-- State management via **localStorage + Context** (bukan Redux/Pinia)
-- API calls via Axios instance (`api.js`) yang handle token otomatis
-- Routing via **react-router-dom v7**
-- Styling via **Tailwind CSS + CSS variables** (theme system)
-- Theme classes dari `themes.js` via `getThemeClasses()`
+- Functional components + hooks (useState, useEffect, useCallback)
+- State via localStorage + Context (bukan Redux)
+- API via Axios instance (`api.js`) — handle token otomatis
+- Routing via react-router-dom v7
+- Styling Tailwind + CSS variables (theme dari `themes.js`)
 
 ### Database
-- Migrations harus **reversible** (up() dan down())
-- Gunakan **foreign key constraints**
-- Gunakan **transactions** untuk data consistency
+- Migration harus reversible (up() dan down())
+- Foreign key constraints
+- DB transactions untuk data consistency
 
 ### Git
-- Commit message dalam **Bahasa Indonesia** atau **English**
+- Commit message Bahasa Indonesia atau English
 - Satu commit = satu perubahan logis
-- Jangan commit file dari `node_modules/`, `vendor/`, `.env`
+- Jangan commit `node_modules/`, `vendor/`, `.env`
 - Jangan commit credentials atau secrets
 
 ---
 
-## 6. DOKUMENTASI
+## 6. DOKUMENTASI YANG WAJIB SINKRON
 
-File dokumentasi yang WAJIB dijaga sinkronisasinya:
-
-| File | Isi |
-|------|-----|
-| `README.md` | Gambaran umum, quick start, akun default |
-| `AGENT.md` | Rules untuk AI (file ini) |
-| `RINGKASAN_LENGKAP_SEMUA_FITUR.md` | Daftar fitur lengkap |
-| `ROLE_ACCESS_GUIDE.md` | Panduan RBAC (perlu diupdate) |
-| `MANUAL_BOOK_INVENTORIKU.md` | Manual book lengkap |
-| `CHANGELOG_V2.md` | Catatan perubahan versi |
+| File | Isi | Status |
+|------|-----|--------|
+| `README.md` | Gambaran umum, quick start, akun default | ✅ OK |
+| `AGENT.md` | Rules untuk AI (file ini) | ✅ OK |
+| `RINGKASAN_LENGKAP_SEMUA_FITUR.md` | Daftar fitur lengkap v2.0 | ✅ OK |
+| `ROLE_ACCESS_GUIDE.md` | Panduan RBAC | 🟡 Perlu update (Kasir ✅ Riwayat) |
+| `MANUAL_BOOK_INVENTORIKU.md` | Manual book lengkap | ✅ OK |
+| `CHANGELOG_V2.md` | Catatan perubahan versi | ✅ OK |
 
 Jika ada perubahan fitur, UPDATE dokumentasi yang relevan di commit yang SAMA.
 
@@ -203,12 +226,13 @@ Jika ada perubahan fitur, UPDATE dokumentasi yang relevan di commit yang SAMA.
 
 ## 7. TESTING
 
-- Backend: `php artisan test` (PHPUnit)
-- Frontend: `npm run lint` (ESLint)
+- Backend: `cd backend && php artisan test`
+- Frontend: `cd frontend && npm run lint`
 - Sebelum commit: Pastikan test lokal lolos
 - Setelah push: Cek GitHub Actions
-- Jika test gagal: JANGAN commit fix tanpa test ulang
+- Jika test gagal: Analisa → Perbaiki → Test ulang → Commit → Push
 
 ---
 
 *Ditetapkan: 22 Juni 2026*
+*Wajib dipatuhi oleh semua model AI yang bekerja pada proyek InventoriKu.*

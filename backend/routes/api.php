@@ -20,17 +20,13 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::post('/update-theme', [AuthController::class, 'updateTheme']);
 
-    // User management (Manager only)
-    Route::apiResource('users', UserController::class);
-
-    // Dashboard endpoints (Manager only)
-    Route::get('/dashboard', [DashboardController::class, 'index']);
-
-    // CRUD for Items (Manager only)
-    Route::apiResource('items', ItemController::class);
-
-    // Restocks (Manager only)
-    Route::apiResource('restocks', RestockController::class)->only(['index', 'store']);
+    // Manager-only routes
+    Route::middleware('role:manager')->group(function () {
+        Route::apiResource('users', UserController::class);
+        Route::get('/dashboard', [DashboardController::class, 'index']);
+        Route::apiResource('items', ItemController::class);
+        Route::apiResource('restocks', RestockController::class)->only(['index', 'store']);
+    });
 
     // Sales (Cashier can create, both can view)
     Route::get('/sales/summary', [SaleController::class, 'summary']);

@@ -44,11 +44,12 @@ InventoriKu v2.0 memiliki sistem **Role-Based Access Control (RBAC)** yang memba
 - ❌ Dashboard (tidak ada akses)
 - ❌ Jenis Barang (tidak ada akses)
 - ❌ Restock Gudang (tidak ada akses)
-- ❌ Riwayat Penjualan (tidak ada akses)
+- ✅ Riwayat Penjualan (lihat & filter transaksi)
 
 **Menu Sidebar:**
 ```
 🛒 Kasir / POS
+🕐 Riwayat Penjualan
 ```
 
 **Use Case:**
@@ -66,7 +67,7 @@ InventoriKu v2.0 memiliki sistem **Role-Based Access Control (RBAC)** yang memba
 | **Jenis Barang** | ✅ CRUD | ❌ No Access |
 | **Restock Gudang** | ✅ Create & View | ❌ No Access |
 | **Kasir/POS** | ❌ No Access | ✅ Full Access |
-| **Riwayat Penjualan** | ✅ View & Filter | ❌ No Access |
+| **Riwayat Penjualan** | ✅ View & Filter | ✅ View & Filter |
 | **Ganti Tema** | ✅ Yes | ✅ Yes |
 | **Logout** | ✅ Yes | ✅ Yes |
 
@@ -110,18 +111,22 @@ Login → Kasir/POS → Pilih Barang → Tambah ke Keranjang
 
 ### Backend (API Level)
 
-Meskipun frontend menyembunyikan menu, backend tetap memvalidasi role:
+Backend memvalidasi role menggunakan middleware `CheckRole`:
 
 ```php
-// Contoh middleware (belum diimplementasikan penuh)
+// routes/api.php — Middleware role sudah aktif
 Route::middleware(['auth:sanctum', 'role:manager'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index']);
     Route::apiResource('items', ItemController::class);
-    Route::apiResource('restocks', RestockController::class);
+    Route::apiResource('restocks', RestockController::class)->only(['index', 'store']);
+    Route::apiResource('users', UserController::class);
 });
 
-Route::middleware(['auth:sanctum', 'role:cashier'])->group(function () {
-    Route::post('/sales', [SaleController::class, 'store']);
+// Sales endpoints — bisa diakses oleh semua role yang login
+Route::middleware('auth:sanctum')->group(function () {
+    Route::apiResource('sales', SaleController::class)->only(['index', 'store']);
+    Route::get('/sales/summary', [SaleController::class, 'summary']);
+    Route::get('/sales/transactions', [SaleController::class, 'transactions']);
 });
 ```
 
@@ -133,6 +138,7 @@ Route::middleware(['auth:sanctum', 'role:cashier'])->group(function () {
   // Cashier routes
   <>
     <Route path="/" element={<Sales />} />
+    <Route path="/sales-history" element={<SalesHistory />} />
     <Route path="*" element={<Navigate to="/" replace />} />
   </>
 ) : (
@@ -142,6 +148,7 @@ Route::middleware(['auth:sanctum', 'role:cashier'])->group(function () {
     <Route path="/items" element={<Items />} />
     <Route path="/restock" element={<Restock />} />
     <Route path="/sales-history" element={<SalesHistory />} />
+    <Route path="/accounts" element={<Accounts currentUser={user} />} />
     <Route path="*" element={<Navigate to="/" replace />} />
   </>
 )}
@@ -392,8 +399,8 @@ A: Belum ada fitur ini di v2.0. Semua kasir bisa proses transaksi tanpa filter p
 **Q: Apakah ada role Owner atau Admin?**
 A: Belum. Saat ini hanya Manager dan Kasir. Owner bisa gunakan role Manager.
 
-**Q: Bisakah kasir lihat riwayat transaksi mereka sendiri?**
-A: Belum. Kasir hanya bisa proses transaksi baru. Riwayat hanya bisa dilihat Manager.
+**Q: Bisakah kasir lihat riwayat transaksi?**
+A: Ya. Sejak v2.0, kasir bisa melihat Riwayat Penjualan (semua transaksi, tidak hanya milik sendiri).
 
 ---
 

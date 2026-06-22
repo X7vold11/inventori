@@ -12,10 +12,6 @@ class UserController extends Controller
      */
     public function index(Request $request)
     {
-        if ($request->user()->role !== 'manager') {
-            return response()->json(['error' => 'Akses ditolak.'], 403);
-        }
-
         $users = User::orderBy('name')->get(['id', 'name', 'email', 'role', 'theme', 'created_at']);
         return response()->json($users);
     }
@@ -25,10 +21,6 @@ class UserController extends Controller
      */
     public function store(Request $request)
     {
-        if ($request->user()->role !== 'manager') {
-            return response()->json(['error' => 'Akses ditolak.'], 403);
-        }
-
         $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
@@ -62,10 +54,6 @@ class UserController extends Controller
      */
     public function update(Request $request, $id)
     {
-        if ($request->user()->role !== 'manager') {
-            return response()->json(['error' => 'Akses ditolak.'], 403);
-        }
-
         $user = User::findOrFail($id);
 
         $request->validate([
@@ -105,10 +93,6 @@ class UserController extends Controller
      */
     public function destroy(Request $request, $id)
     {
-        if ($request->user()->role !== 'manager') {
-            return response()->json(['error' => 'Akses ditolak.'], 403);
-        }
-
         // Prevent self-deletion
         if ($request->user()->id == $id) {
             return response()->json(['error' => 'Anda tidak dapat menghapus akun Anda sendiri.'], 400);
