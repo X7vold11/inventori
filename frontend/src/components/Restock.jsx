@@ -3,13 +3,11 @@ import { PackagePlus, Calendar, ArrowUpRight, Package, TrendingUp, Boxes, Clock 
 import Swal from 'sweetalert2'
 import withReactContent from 'sweetalert2-react-content'
 import api from '../api';
-import { useTheme } from '../ThemeContext';
 import { ThemedButton, ThemedCard, ThemedInput, ThemedSelect, ThemedPageHeader, ThemedStatCard, ThemedLoadingSpinner, ThemedBadge } from './ThemedComponents';
 
 const MySwal = withReactContent(Swal);
 
 export default function Restock() {
-  const { themeConfig } = useTheme();
   const [items, setItems] = useState([]);
   const [restockHistory, setRestockHistory] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -228,7 +226,7 @@ export default function Restock() {
             <div>
               {restockHistory.length > 0 ? (
                 <div className="divide-y divide-slate-100">
-                  {restockHistory.map((entry, index) => (
+                  {restockHistory.map((entry) => (
                     <div 
                       key={entry.id} 
                       className="p-5 px-6 hover:bg-slate-50/30 transition-all duration-200 group cursor-default"

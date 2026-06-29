@@ -3,7 +3,6 @@ import { Users, UserPlus, Trash2, Edit3, Mail, Lock, Shield, X, RefreshCw } from
 import Swal from 'sweetalert2';
 import withReactContent from 'sweetalert2-react-content';
 import api from '../api';
-import { useTheme } from '../ThemeContext';
 import { 
   ThemedButton, 
   ThemedCard, 
@@ -18,7 +17,6 @@ import {
 const MySwal = withReactContent(Swal);
 
 export default function Accounts({ currentUser }) {
-  const { themeConfig } = useTheme();
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);

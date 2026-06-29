@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 import { useTheme } from '../ThemeContext';
 import { Package } from 'lucide-react';
 
@@ -122,13 +123,16 @@ export const ThemedPageHeader = ({ title, subtitle, action, icon: Icon }) => {
 };
 
 // Themed Stat Card
-export const ThemedStatCard = ({ title, value, icon: Icon, suffix = '', className = '' }) => {
+export const ThemedStatCard = ({ title, value, icon: IconComponent, suffix = '', className = '' }) => {
+   
   return (
     <div className={`bg-white rounded-2xl p-5 border border-slate-100 shadow-sm transition-all duration-250 hover:shadow-md hover:-translate-y-0.5 relative overflow-hidden ${className}`}>
       <div className="flex items-center gap-3 mb-3">
-        <div className="p-2 bg-theme-bg-light text-theme-text rounded-xl">
-          <Icon size={18} />
-        </div>
+        {IconComponent && (
+          <div className="p-2 bg-theme-bg-light text-theme-text rounded-xl">
+            <IconComponent size={18} />
+          </div>
+        )}
         <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">{title}</span>
       </div>
       <p className="text-2xl font-bold text-slate-800 stat-value">

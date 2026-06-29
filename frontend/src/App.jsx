@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/set-state-in-effect */
 import { useState, useEffect, useCallback } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link, useLocation, Navigate } from 'react-router-dom';
 import { Package, ShoppingCart, PlusCircle, LayoutDashboard, Clock, LogOut, User, Palette, Users } from 'lucide-react';
@@ -59,7 +60,7 @@ function Sidebar({ user, onLogout, theme, onThemeChange }) {
       if (result.isConfirmed) {
         try {
           await api.post('/logout');
-        } catch (e) {
+        } catch {
           // Token might already be invalid, that's fine
         }
         onLogout();
@@ -105,7 +106,7 @@ function Sidebar({ user, onLogout, theme, onThemeChange }) {
       </div>
       
       <nav className="flex-1 px-4 space-y-1.5 mt-4">
-        {menuItems.map((item, idx) => (
+        {menuItems.map((item) => (
           <Link key={item.path} to={item.path} className={linkClass(item.path)}>
             {/* Active indicator bar */}
             {isActive(item.path) && (
@@ -164,6 +165,10 @@ function App() {
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [entrancePhase, setEntrancePhase] = useState('none'); // 'none' | 'entering' | 'done'
 
+  const handleLogout = useCallback(() => {
+    setIsLoggingOut(true);
+  }, []);
+
   useEffect(() => {
     // Check for existing auth on mount
     const token = localStorage.getItem('auth_token');
@@ -195,9 +200,9 @@ function App() {
     const handleForceLogout = () => handleLogout();
     window.addEventListener('auth:logout', handleForceLogout);
     return () => window.removeEventListener('auth:logout', handleForceLogout);
-  }, []);
+  }, [handleLogout]);
 
-  const handleLoginSuccess = (userData, token) => {
+  const handleLoginSuccess = (userData) => {
     setUser(userData);
     setTheme(userData.theme || 'blue');
     setEntrancePhase('entering');
@@ -207,10 +212,6 @@ function App() {
       setTimeout(() => setEntrancePhase('done'), 600);
     }, 300);
   };
-
-  const handleLogout = useCallback(() => {
-    setIsLoggingOut(true);
-  }, []);
 
   const completeLogout = useCallback(() => {
     localStorage.removeItem('auth_token');
@@ -236,7 +237,7 @@ function App() {
         timer: 1500,
         showConfirmButton: false,
       });
-    } catch (error) {
+    } catch {
       MySwal.fire({
         icon: 'error',
         title: 'Gagal',

@@ -10,6 +10,7 @@ export default function PageTransition({ children }) {
   useEffect(() => {
     if (location.pathname !== prevPathRef.current) {
       // Start exit animation
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setTransitionStage('exit');
       prevPathRef.current = location.pathname;
 

@@ -2,11 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts';
 import { TrendingUp, Package, ShoppingCart, DollarSign, LayoutDashboard } from 'lucide-react';
 import api from '../api';
-import { useTheme } from '../ThemeContext';
 import { ThemedCard, ThemedLoadingSpinner, ThemedStatCard, ThemedPageHeader } from './ThemedComponents';
 
 export default function Dashboard() {
-  const { themeConfig } = useTheme();
   const [stats, setStats] = useState({
     totalItems: 0,
     totalStock: 0,

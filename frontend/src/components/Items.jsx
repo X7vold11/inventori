@@ -3,13 +3,11 @@ import { Plus, Search, Trash2, Tag, DollarSign, Archive, Box, AlertCircle, X, Sp
 import Swal from 'sweetalert2'
 import withReactContent from 'sweetalert2-react-content'
 import api from '../api';
-import { useTheme } from '../ThemeContext';
 import { ThemedButton, ThemedCard, ThemedInput, ThemedPageHeader, ThemedStatCard, ThemedLoadingSpinner, ThemedBadge } from './ThemedComponents';
 
 const MySwal = withReactContent(Swal);
 
 export default function Items() {
-  const { themeConfig } = useTheme();
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -85,7 +83,7 @@ export default function Items() {
             showConfirmButton: false
           });
           fetchItems();
-        } catch (error) {
+        } catch {
           MySwal.fire({
             icon: 'error',
             title: 'Gagal Menghapus',
@@ -205,7 +203,7 @@ export default function Items() {
                   </td>
                 </tr>
               )}
-              {filteredItems.map((item, index) => {
+              {filteredItems.map((item) => {
                 const stock = item.inventory?.stock ?? 0;
                 const status = getStockStatus(stock);
                 

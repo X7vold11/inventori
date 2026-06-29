@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Receipt, TrendingUp, ShoppingCart, DollarSign, Calendar, Search, Filter, Package, ArrowUpRight, ArrowDownRight, RefreshCw, ChevronDown, Clock } from 'lucide-react';
 import api from '../api';
 import { useTheme } from '../ThemeContext';
@@ -30,9 +30,9 @@ export default function SalesHistory() {
 
   useEffect(() => {
     fetchData();
-  }, []);
+  }, [fetchData]);
 
-  const fetchData = async (filters = {}) => {
+  const fetchData = useCallback(async (filters = {}) => {
     setLoading(true);
     try {
       const params = {};
@@ -50,7 +50,7 @@ export default function SalesHistory() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [dateFrom, dateTo]);
 
   const handleFilter = () => {
     setIsFiltering(true);

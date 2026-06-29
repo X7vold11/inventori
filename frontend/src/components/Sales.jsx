@@ -3,13 +3,11 @@ import { ShoppingCart, Banknote, Receipt, Plus, Minus, Trash2, Search, ArrowLeft
 import Swal from 'sweetalert2'
 import withReactContent from 'sweetalert2-react-content'
 import api from '../api';
-import { useTheme } from '../ThemeContext';
 import { ThemedButton, ThemedCard, ThemedInput, ThemedLoadingSpinner, ThemedBadge } from './ThemedComponents';
 
 const MySwal = withReactContent(Swal);
 
 export default function Sales() {
-  const { themeConfig } = useTheme();
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   
