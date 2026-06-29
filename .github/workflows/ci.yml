@@ -23,7 +23,9 @@ jobs:
 
       - name: Copy .env
         working-directory: backend
-        run: cp .env.example .env
+        run: |
+          cp .env.example .env
+          touch database/database.sqlite
 
       - name: Install Composer dependencies
         working-directory: backend
