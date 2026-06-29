@@ -14,6 +14,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Identity
+        run: |
+          echo "Nama: Muhammad Arsyad Husein"
+          echo "NIM: 101230114"
+
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
