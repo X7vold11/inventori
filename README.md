@@ -216,7 +216,7 @@ Proprietary - © 2026 InventoriKu. All rights reserved.
 
 ## 👥 Team
 
-- **Developer**: Tim InventoriKu
+- **Developer**: Muhammad Arsyad Husein (101230114)
 - **Designer**: UI/UX Team
 - **Documentation**: Tech Writers
 
